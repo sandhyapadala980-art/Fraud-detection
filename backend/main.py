@@ -10,10 +10,16 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from database import TransactionRecord, create_tables, get_db
-from model import ModelArtifacts, load_model, predict_probability, to_feature_frame
-from schemas import PredictionResponse, TrainRequest, TransactionInput, TransactionOut
-from train import train_and_save
+try:
+    from .database import TransactionRecord, create_tables, get_db
+    from .model import ModelArtifacts, load_model, predict_probability, to_feature_frame
+    from .schemas import PredictionResponse, TrainRequest, TransactionInput, TransactionOut
+    from .train import train_and_save
+except ImportError:
+    from database import TransactionRecord, create_tables, get_db
+    from model import ModelArtifacts, load_model, predict_probability, to_feature_frame
+    from schemas import PredictionResponse, TrainRequest, TransactionInput, TransactionOut
+    from train import train_and_save
 
 
 APP_TITLE = "Fraud Detection System"

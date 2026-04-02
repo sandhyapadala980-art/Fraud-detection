@@ -5,7 +5,10 @@ from typing import Optional
 
 import pandas as pd
 
-from model import ModelArtifacts, save_model, train_from_dataframe
+try:
+    from .model import ModelArtifacts, save_model, train_from_dataframe
+except ImportError:
+    from model import ModelArtifacts, save_model, train_from_dataframe
 
 
 def load_dataset(dataset_path: str) -> pd.DataFrame:
