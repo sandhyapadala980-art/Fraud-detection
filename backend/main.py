@@ -23,8 +23,10 @@ except ImportError:
 
 
 APP_TITLE = "Fraud Detection System"
-MODEL_PATH = os.getenv("MODEL_PATH", "./artifacts/fraud_model.joblib")
-DATASET_PATH = os.getenv("DATASET_PATH", "./data/sample_transactions.csv")
+BASE_DIR = Path(__file__).resolve().parent
+DATASET_PATH = Path(os.getenv("DATASET_PATH", str(BASE_DIR / "data" / "sample_transactions.csv")))
+MODEL_PATH = Path(os.getenv("MODEL_PATH", "/tmp/fraud_model.joblib"))
+ALLOW_MODEL_PERSISTENCE = os.getenv("ALLOW_MODEL_PERSISTENCE", "false").lower() == "true"
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -115,14 +117,22 @@ def _ensure_model_loaded() -> ModelArtifacts:
     global model_artifacts
     if model_artifacts is None:
         try:
-            model_artifacts = load_model(MODEL_PATH)
+            model_artifacts = load_model(str(MODEL_PATH))
         except Exception:
             model_artifacts = None
     if model_artifacts is None:
-        if not Path(DATASET_PATH).exists():
+        if not DATASET_PATH.exists():
             raise HTTPException(status_code=503, detail="Model is not trained yet")
         try:
-            model_artifacts = train_and_save(DATASET_PATH, MODEL_PATH)
+            data = pd.read_csv(DATASET_PATH)
+            from .model import train_from_dataframe, save_model
+
+            model_artifacts = train_from_dataframe(data)
+            if ALLOW_MODEL_PERSISTENCE:
+                try:
+                    save_model(model_artifacts, str(MODEL_PATH))
+                except Exception:
+                    pass
         except Exception as exc:
             raise HTTPException(status_code=503, detail=f"Unable to load or train model: {exc}") from exc
     return model_artifacts
@@ -196,13 +206,26 @@ def predict_transaction(transaction: TransactionInput, db: Session = Depends(get
 
 @app.post("/train")
 def train_model(payload: TrainRequest | None = None) -> Dict[str, object]:
-    dataset_path = payload.dataset_path if payload and payload.dataset_path else DATASET_PATH
-    artifacts = train_and_save(dataset_path, MODEL_PATH)
     global model_artifacts
-    model_artifacts = artifacts
+    dataset_path = Path(payload.dataset_path) if payload and payload.dataset_path else DATASET_PATH
+    if not dataset_path.exists():
+        raise HTTPException(status_code=400, detail=f"Dataset not found: {dataset_path}")
+    try:
+        data = pd.read_csv(dataset_path)
+        from .model import train_from_dataframe, save_model
+
+        artifacts = train_from_dataframe(data)
+        if ALLOW_MODEL_PERSISTENCE:
+            try:
+                save_model(artifacts, str(MODEL_PATH))
+            except Exception:
+                pass
+        model_artifacts = artifacts
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Training failed: {exc}") from exc
     return {
         "message": "Model trained successfully",
-        "metadata": artifacts.metadata,
+        "metadata": model_artifacts.metadata,
     }
 
 
