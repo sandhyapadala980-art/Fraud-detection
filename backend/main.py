@@ -90,7 +90,10 @@ def _recent_transactions(db: Session, user_id: int) -> List[TransactionRecord]:
 
 
 def _build_feature_payload(db: Session, transaction: TransactionInput) -> Dict[str, object]:
-    recent = _recent_transactions(db, transaction.user_id)
+    try:
+        recent = _recent_transactions(db, transaction.user_id)
+    except Exception:
+        recent = []
     frequency_transactions = max(1, len(recent) + 1)
     previous = recent[0] if recent else None
     device_change = 1 if previous and previous.device_id != transaction.device_id else 0
@@ -136,6 +139,18 @@ def _ensure_model_loaded() -> ModelArtifacts:
         except Exception as exc:
             raise HTTPException(status_code=503, detail=f"Unable to load or train model: {exc}") from exc
     return model_artifacts
+
+
+def _persist_transaction(db: Session, record: TransactionRecord) -> None:
+    try:
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
 
 
 @app.on_event("startup")
@@ -192,9 +207,7 @@ def predict_transaction(transaction: TransactionInput, db: Session = Depends(get
         risk_factors=risk_factors,
         fraud_probability=fraud_probability,
     )
-    db.add(record)
-    db.commit()
-    db.refresh(record)
+    _persist_transaction(db, record)
 
     return PredictionResponse(
         risk_score=risk_score,
@@ -231,5 +244,7 @@ def train_model(payload: TrainRequest | None = None) -> Dict[str, object]:
 
 @app.get("/transactions", response_model=list[TransactionOut])
 def list_transactions(db: Session = Depends(get_db)) -> List[TransactionOut]:
-    rows = db.query(TransactionRecord).order_by(TransactionRecord.created_at.desc()).limit(100).all()
-    return rows
+    try:
+        return db.query(TransactionRecord).order_by(TransactionRecord.created_at.desc()).limit(100).all()
+    except Exception:
+        return []
