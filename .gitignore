@@ -1,0 +1,16 @@
+.venv/
+backend/.venv/
+backend/__pycache__/
+backend/*.log
+backend/*.db
+backend/*.sqlite
+backend/*.db-journal
+backend/*.sqlite-journal
+backend/*.err
+backend/artifacts/
+frontend/node_modules/
+frontend/dist/
+frontend/*.log
+__pycache__/
+*.pyc
+.DS_Store

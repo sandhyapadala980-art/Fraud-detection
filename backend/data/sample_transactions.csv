@@ -1,0 +1,13 @@
+amount,frequency_transactions,device_change,location_anomaly,failed_login_attempts,location,device_id,payment_method,label
+120.5,1,0,0,0,New York,device_1,card,0
+89.0,2,0,0,0,Los Angeles,device_2,upi,0
+2500.0,7,1,1,4,Chicago,device_9,crypto,1
+1600.0,5,1,1,3,Miami,device_3,wire_transfer,1
+45.0,1,0,0,0,Dallas,device_4,card,0
+780.0,3,0,0,1,Seattle,device_5,card,0
+2100.0,6,1,1,5,London,device_8,crypto,1
+300.0,2,0,0,0,Boston,device_2,upi,0
+980.0,4,1,0,2,San Francisco,device_7,card,0
+4200.0,8,1,1,6,Paris,device_10,wire_transfer,1
+130.0,1,0,0,0,New York,device_1,card,0
+5000.0,9,1,1,7,Singapore,device_11,crypto,1
