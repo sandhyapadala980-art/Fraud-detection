@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import pandas as pd
+from fastapi.responses import FileResponse
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -24,9 +25,13 @@ except ImportError:
 
 APP_TITLE = "Fraud Detection System"
 BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
 DATASET_PATH = Path(os.getenv("DATASET_PATH", str(BASE_DIR / "data" / "sample_transactions.csv")))
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "/tmp/fraud_model.joblib"))
 ALLOW_MODEL_PERSISTENCE = os.getenv("ALLOW_MODEL_PERSISTENCE", "false").lower() == "true"
+INDEX_HTML = PROJECT_ROOT / "index.html"
+APP_JS = PROJECT_ROOT / "app.js"
+STYLE_CSS = PROJECT_ROOT / "style.css"
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
@@ -168,12 +173,18 @@ def health() -> Dict[str, str]:
 
 
 @app.get("/")
-def root() -> Dict[str, str]:
-    return {
-        "message": "Fraud Detection API is running",
-        "docs": "/docs",
-        "health": "/health",
-    }
+def root() -> FileResponse:
+    return FileResponse(INDEX_HTML)
+
+
+@app.get("/app.js")
+def root_app_js() -> FileResponse:
+    return FileResponse(APP_JS)
+
+
+@app.get("/style.css")
+def root_style_css() -> FileResponse:
+    return FileResponse(STYLE_CSS)
 
 
 @app.post("/predict", response_model=PredictionResponse)

@@ -1,6 +1,6 @@
-app.py
 pyproject.toml
 frontend/
+api/
 backend/backend.err
 backend/backend.log
 backend/backend-out.log

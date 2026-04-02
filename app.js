@@ -1,8 +1,10 @@
 const e = React.createElement;
 const { useEffect, useState } = React;
 
+const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: isLocalHost ? 'http://127.0.0.1:8001' : '',
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -151,7 +153,12 @@ function App() {
       setResult(response.data);
       await loadHistory();
     } catch (err) {
-      setError(err?.response?.data?.detail || 'Prediction failed');
+      const detail =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Prediction failed';
+      setError(detail);
     } finally {
       setLoading(false);
     }
@@ -163,7 +170,12 @@ function App() {
     try {
       await api.post('/train', {});
     } catch (err) {
-      setError(err?.response?.data?.detail || 'Training failed');
+      const detail =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Training failed';
+      setError(detail);
     } finally {
       setTraining(false);
     }
