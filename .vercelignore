@@ -1,5 +1,4 @@
 app.py
-requirements.txt
 pyproject.toml
 frontend/
 backend/backend.err
