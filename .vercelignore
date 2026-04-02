@@ -1,0 +1,11 @@
+app.py
+requirements.txt
+pyproject.toml
+frontend/
+backend/backend.err
+backend/backend.log
+backend/backend-out.log
+backend/fraud.db
+backend/fraud.db-journal
+backend/data/fraud.sqlite
+backend/data/fraud.sqlite-journal
