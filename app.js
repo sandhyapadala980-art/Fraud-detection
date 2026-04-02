@@ -4,7 +4,7 @@ const { useEffect, useState } = React;
 const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
 const api = axios.create({
-  baseURL: isLocalHost ? 'http://127.0.0.1:8001' : '',
+  baseURL: isLocalHost ? 'http://127.0.0.1:8001' : window.location.origin,
   headers: { 'Content-Type': 'application/json' }
 });
 
